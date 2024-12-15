@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+    <style>
+        /* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(to bottom, #1e3c72, #2a5298);
+  color: #fff;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Chat App Container */
+#app {
+  background: #2d2f36;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #4caf50;
+}
+
+/* Chat Window */
+#chat-window {
+  background: #23252b;
+  border-radius: 8px;
+  padding: 10px;
+  height: 300px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#output, #feedback {
+  margin-bottom: 10px;
+}
+
+#output div {
+  margin-bottom: 5px;
+  padding: 8px;
+  border-radius: 5px;
+  background: #4caf50;
+  color: #fff;
+  word-wrap: break-word;
+}
+
+#feedback {
+  font-style: italic;
+  color: #aaa;
+}
+
+/* Input Fields */
+input[type="text"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+input[type="text"]::placeholder {
+  color: #bbb;
+}
+
+/* Send Button */
+button#send {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  background: #4caf50;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button#send:hover {
+  background: #45a049;
+}
+
+/* Scrollbar Style */
+#chat-window::-webkit-scrollbar {
+  width: 5px;
+}
+
+#chat-window::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+#chat-window::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>chat app</h2>
+        <div id="chat-window">
+            <div id="output"></div>
+            <div id="feedback"></div>
+        </div>
+        <input type="text" placeholder="Name" id="name" />
+        <input type="text" placeholder="Message" id="message" />
+        <button id="send">Send</button>
+    </div>
+
+    <script>
+        const socket = io("http://localhost:4000");
+        let output = document.getElementById("output");
+        let message = document.getElementById("message");
+        let name = document.getElementById("name");
+        let send = document.getElementById("send");
+        let feedback = document.getElementById("feedback");
+
+
+        send.addEventListener("click",()=> {
+            let data = {
+                name: name.value,
+                message: message.value,
+            };
+            socket.emit("chat",data);
+        });
+        message.addEventListener('keypress',()=>{
+            socket.emit("typing", name.value);
+        });
+
+        //listen events
+    socket.on("chat", (data) => {
+    output.innerHTML += `<p><strong>${data.name}</strong>: ${data.message}</p>`;
+    name.value="";
+    message.value=""; 
+    feedback.innerHTML=""; 
+});
+
+socket.on("typing", (name) => {
+  feedback.innerHTML= `<p><em>${name}</em> is typing...</p>`;
+  setTimeout(()=>{
+    feedback.innerHTML = ""
+  }, 3000);
+
+    
+});
+
+
+      </script>
+</body>
+</html>
